@@ -1,7 +1,7 @@
 .markdown-link-card-link {
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   font-size: 16.5px;
   height: 120px;
   line-height: 1.5;
@@ -15,11 +15,14 @@
   margin: 1.5rem 0;
 }
 
+.markdown-link-card-link:hover {
+  background: rgba(239, 246, 251, .7);
+}
+
 .markdown-link-card-main {
   flex: 1 1;
   padding: .8em 1.2em;
   min-width: 0;
-  background-color: #fff;
 }
 
 .markdown-link-card-title {

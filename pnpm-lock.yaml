@@ -115,6 +115,9 @@ importers:
       vite:
         specifier: ^5.2.0
         version: 5.2.3(@types/node@20.11.30)
+      vite-node:
+        specifier: ^1.4.0
+        version: 1.4.0(@types/node@20.11.30)
 
 packages:
 

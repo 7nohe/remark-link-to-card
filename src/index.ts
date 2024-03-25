@@ -33,7 +33,12 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 
 	return async (tree) => {
 		const promises: (() => Promise<void>)[] = [];
-		visit(tree, "paragraph", (node) => {
+		visit(tree, "paragraph", (node, _, parent) => {
+			// Check if the parent is a root node
+			if (parent?.type !== "root") {
+				return;
+			}
+
 			const linkOrTextNode = node.children?.at(0);
 
 			if (linkOrTextNode?.type !== "link" && linkOrTextNode?.type !== "text") {

@@ -1,5 +1,5 @@
 <h2>Links</h2>
-<a class="markdown-link-card-link" href="https://github.com/">
+<a class="markdown-link-card-link" href="https://github.com/" target="_blank" rel="noopener noreferrer nofollow">
   <div class="markdown-link-card-main">
     <div class="markdown-link-card-title">GitHub: Let’s build from here</div>
     <div class="markdown-link-card-description">
@@ -16,7 +16,7 @@
   </div>
 
             </a>
-<a class="markdown-link-card-link" href="https://github.com/remarkjs/remark">
+<a class="markdown-link-card-link" href="https://github.com/remarkjs/remark" target="_blank" rel="noopener noreferrer nofollow">
   <div class="markdown-link-card-main">
     <div class="markdown-link-card-title">GitHub - remarkjs/remark: markdown processor powered by plugins part of the @unifiedjs collective</div>
     <div class="markdown-link-card-description">
@@ -33,7 +33,7 @@
   </div>
 
             </a>
-<a class="markdown-link-card-link" href="https://remark.js.org/">
+<a class="markdown-link-card-link" href="https://remark.js.org/" target="_blank" rel="noopener noreferrer nofollow">
   <div class="markdown-link-card-main">
     <div class="markdown-link-card-title">remark</div>
     <div class="markdown-link-card-description">
@@ -52,6 +52,10 @@
             </a>
 <p>This is a <a href="https://github.com/">link</a>.</p>
 <p>This is a sentence with a <a href="https://example.com">link</a> inside.</p>
+<ul>
+<li><a href="https://github.com/">GitHub</a></li>
+<li>https://yarnpkg.com/</li>
+</ul>
 
 <style>
 html {
@@ -65,7 +69,7 @@ html {
 .markdown-link-card-link {
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   font-size: 16.5px;
   height: 120px;
   line-height: 1.5;
@@ -79,11 +83,14 @@ html {
   margin: 1.5rem 0;
 }
 
+.markdown-link-card-link:hover {
+  background: rgba(239, 246, 251, .7);
+}
+
 .markdown-link-card-main {
   flex: 1 1;
   padding: .8em 1.2em;
   min-width: 0;
-  background-color: #fff;
 }
 
 .markdown-link-card-title {
