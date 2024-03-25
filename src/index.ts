@@ -39,8 +39,14 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 				return;
 			}
 
+			// Check if the paragraph has only one child
+			if (node.children.length !== 1) {
+				return;
+			}
+
 			const linkOrTextNode = node.children?.at(0);
 
+			// Check if the child is a link or text node
 			if (linkOrTextNode?.type !== "link" && linkOrTextNode?.type !== "text") {
 				return;
 			}
@@ -49,7 +55,6 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 			let textNode: Text | PhrasingContent | undefined;
 			let url: string | undefined;
 
-			// Check if the node is a link or text node
 			switch (linkOrTextNode.type) {
 				case "link":
 					textNode = linkOrTextNode.children?.at(0);
@@ -67,7 +72,7 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 				return;
 			}
 
-			// Check if the text node is a link
+			// Check if the URL is valid
 			if (!isValid) {
 				return;
 			}
