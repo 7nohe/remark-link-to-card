@@ -1,0 +1,80 @@
+{
+	"name": "remark-link-to-card",
+	"type": "module",
+	"version": "0.0.1",
+	"packageManager": "pnpm@8.15.5",
+	"description": "remark plugin to convert text links to link cards",
+	"author": "Daiki Urata",
+	"license": "MIT",
+	"homepage": "https://github.com/7nohe/remark-link-to-card#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/7nohe/remark-link-to-card.git"
+	},
+	"bugs": "https://github.com/7nohe/remark-link-to-card/issues",
+	"keywords": [
+		"remark",
+		"remark-plugin",
+		"remark-link-card",
+		"remark-link-to-card"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
+		},
+		"./styles/*": "./styles/*"
+	},
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"typesVersions": {
+		"*": {
+			"*": ["./dist/*", "./dist/index.d.ts"]
+		}
+	},
+	"files": ["dist", "styles"],
+	"scripts": {
+		"build": "unbuild",
+		"dev": "unbuild --stub",
+		"format": "biome format . --write",
+		"lint": "biome lint .",
+		"check": "biome check --apply .",
+		"prepublishOnly": "pnpm run build",
+		"release": "bumpp && npm publish",
+		"test": "vitest",
+		"typecheck": "tsc --noEmit",
+		"prepare": "simple-git-hooks"
+	},
+	"peerDependencies": {
+		"@types/mdast": "^4.0.3",
+		"unified": "^11.0.4"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.6.2",
+		"@types/node": "^20.10.6",
+		"bumpp": "^9.4.0",
+		"consola": "^3.2.3",
+		"lint-staged": "^15.2.2",
+		"ofetch": "^1.3.4",
+		"open-graph-scraper-lite": "^2.0.0",
+		"remark-html": "^16.0.1",
+		"remark-parse": "^11.0.0",
+		"simple-git-hooks": "^2.11.0",
+		"typescript": "^5.4.3",
+		"ufo": "^1.5.3",
+		"unbuild": "^2.0.0",
+		"vite": "^5.2.3",
+		"vitest": "^1.4.0"
+	},
+	"dependencies": {
+		"unist-util-visit": "^5.0.0"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "pnpm lint-staged"
+	},
+	"lint-staged": {
+		"*": "biome check --apply ."
+	}
+}
