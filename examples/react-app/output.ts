@@ -18,7 +18,7 @@ export default `<h2>Links</h2>
             </a>
 <a class="markdown-link-card-link" href="https://svelte.dev/" target="_blank" rel="noopener noreferrer nofollow">
   <div class="markdown-link-card-main">
-    <div class="markdown-link-card-title">Svelte • Cybernetically enhanced web apps</div>
+    <div class="markdown-link-card-title">Svelte &#x2022; Cybernetically enhanced web apps</div>
     <div class="markdown-link-card-description">
       
     </div>
@@ -29,7 +29,7 @@ export default `<h2>Links</h2>
   </div>
   
   <div class="markdown-link-card-thumbnail">
-    <img src="https://svelte.dev/images/twitter-thumbnail.jpg" alt="Svelte • Cybernetically enhanced web apps" class="markdown-link-card-thumbnail-image">
+    <img src="https://svelte.dev/images/twitter-thumbnail.jpg" alt="Svelte &#x2022; Cybernetically enhanced web apps" class="markdown-link-card-thumbnail-image">
   </div>
 
             </a>
@@ -92,4 +92,18 @@ export default `<h2>Links</h2>
 <li><a href="https://github.com/">GitHub</a></li>
 <li>https://yarnpkg.com/</li>
 </ul>
+<h2>PDF</h2>
+<a class="markdown-link-card-link" href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer nofollow">
+  <div class="markdown-link-card-main">
+    <div class="markdown-link-card-title">https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf</div>
+    <div class="markdown-link-card-description">
+      
+    </div>
+    <div class="markdown-link-card-meta">
+      <img class="markdown-link-card-favicon" src="https://www.google.com/s2/favicons?domain=www.w3.org" alt="www.w3.org favicon image" width="14" height="14">
+      www.w3.org
+    </div>
+  </div>
+  
+            </a>
 `;

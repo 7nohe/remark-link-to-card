@@ -11,6 +11,12 @@ const LOG_PREFIX = "[remark-link-to-card]";
 
 type RemarkLinkToCardOptions = {
 	/**
+	 * Timeout for the fetch request in milliseconds.
+	 *
+	 * @default 5000
+	 */
+	timeout?: number;
+	/**
 	 * Prefix for the class names.
 	 *
 	 * @default 'markdown-link-card'
@@ -30,7 +36,7 @@ const isValidURL = (text: string): boolean => {
 const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 	options = {},
 ) => {
-	const { classPrefix = "markdown-link-card" } = options;
+	const { classPrefix = "markdown-link-card", timeout = 5000 } = options;
 
 	return async (tree) => {
 		const promises: (() => Promise<void>)[] = [];
@@ -90,15 +96,36 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 				let ogImageUrl: string | undefined;
 
 				try {
-					const html = await ofetch(url);
+					const raw = await ofetch.raw<string>(url, {
+						timeout,
+					});
+					const contentType = raw.headers.get("content-type");
+
+					// Only process HTML content
+					if (contentType?.indexOf("text/html") === -1) {
+						throw new Error("Content type is not HTML");
+					}
+
+					const html = raw._data;
+
+					if (html === undefined || html === "") {
+						throw new Error("HTML content is empty");
+					}
+
 					const ogData = await ogs({ html });
 					const { result } = ogData;
+
+					if (result.success === false) {
+						throw new Error(result.errorDetails?.message);
+					}
 
 					title = he.encode(result.ogTitle ?? title);
 					description = he.encode(result.ogDescription ?? description);
 					ogImageUrl = result.ogImage?.at(0)?.url;
 				} catch (error) {
-					consola.error(LOG_PREFIX, error);
+					const message =
+						error instanceof Error ? error.message : "An error occurred";
+					consola.error(LOG_PREFIX, message);
 				}
 
 				node.data = {
