@@ -21,6 +21,9 @@ importers:
       '@biomejs/biome':
         specifier: ^1.6.2
         version: 1.6.2
+      '@types/he':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@types/node':
         specifier: ^20.10.6
         version: 20.11.30
@@ -30,6 +33,9 @@ importers:
       consola:
         specifier: ^3.2.3
         version: 3.2.3
+      he:
+        specifier: ^1.2.0
+        version: 1.2.0
       lint-staged:
         specifier: ^15.2.2
         version: 15.2.2
@@ -1230,6 +1236,10 @@ packages:
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
     dependencies:
       '@types/unist': 3.0.2
+
+  /@types/he@1.2.3:
+    resolution: {integrity: sha512-q67/qwlxblDzEDvzHhVkwc1gzVWxaNxeyHUBF4xElrvjL11O+Ytze+1fGpBHlr/H9myiBUaUXNnNPmBHxxfAcA==}
+    dev: true
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -2651,6 +2661,11 @@ packages:
       hast-util-parse-selector: 4.0.0
       property-information: 6.4.1
       space-separated-tokens: 2.0.2
+
+  /he@1.2.0:
+    resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
+    hasBin: true
+    dev: true
 
   /hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}

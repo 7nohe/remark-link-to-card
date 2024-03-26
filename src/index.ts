@@ -1,4 +1,5 @@
 import { consola } from "consola";
+import he from "he";
 import type { PhrasingContent, Root, Text } from "mdast";
 import { ofetch } from "ofetch";
 import ogs from "open-graph-scraper-lite";
@@ -93,8 +94,8 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 					const ogData = await ogs({ html });
 					const { result } = ogData;
 
-					title = result.ogTitle ?? title;
-					description = result.ogDescription ?? description;
+					title = he.encode(result.ogTitle ?? title);
+					description = he.encode(result.ogDescription ?? description);
 					ogImageUrl = result.ogImage?.at(0)?.url;
 				} catch (error) {
 					consola.error(LOG_PREFIX, error);
