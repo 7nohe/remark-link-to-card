@@ -64,6 +64,44 @@ to the following HTML:
 </a>
 ```
 
+### Options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `timeout` | `number` | `5000` | Timeout for the request in milliseconds. |
+| `classPrefix` | `string` | `'markdown-link-card'` | Prefix for the generated class names. |
+| `fetcher` | `LinkCardFetcher` | requests the URL, accepting only `text/html` | Retrieves the HTML a link's Open Graph tags are read from. |
+
+#### `fetcher`
+
+By default the plugin requests each link directly. Supply a `fetcher` where a
+direct cross-origin request is not possible — running in a browser, where the
+request has to go through your own proxy — or to cache, mock, or rate-limit the
+lookups.
+
+```ts
+import RemarkLinkToCard, { type LinkCardFetcher } from 'remark-link-to-card'
+
+// In a browser, route the request through your own endpoint so it is
+// same-origin and not blocked by CORS.
+const fetcher: LinkCardFetcher = async (url, { timeout }) => {
+  const response = await fetch(`/api/og?url=${encodeURIComponent(url)}`, {
+    signal: AbortSignal.timeout(timeout),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status}`)
+  }
+
+  return response.text()
+}
+
+unified().use(RemarkLinkToCard, { fetcher })
+```
+
+Throw to signal that the metadata could not be retrieved; the error is logged
+and the card falls back to the link text.
+
 ### Styling
 
 You can write your custom styles for your cards.
