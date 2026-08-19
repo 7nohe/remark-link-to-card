@@ -9,6 +9,31 @@ import { visit } from "unist-util-visit";
 
 const LOG_PREFIX = "[remark-link-to-card]";
 
+/**
+ * Fetches the HTML that a link's Open Graph tags are read from.
+ *
+ * Throw to signal that the metadata could not be retrieved; the error is
+ * logged and the card falls back to the link text.
+ */
+export type LinkCardFetcher = (
+	url: string,
+	context: { timeout: number },
+) => Promise<string | undefined>;
+
+const defaultFetcher: LinkCardFetcher = async (url, { timeout }) => {
+	const raw = await ofetch.raw<string>(url, {
+		timeout,
+	});
+	const contentType = raw.headers.get("content-type");
+
+	// Only process HTML content
+	if (contentType?.indexOf("text/html") === -1) {
+		throw new Error("Content type is not HTML");
+	}
+
+	return raw._data;
+};
+
 type RemarkLinkToCardOptions = {
 	/**
 	 * Timeout for the fetch request in milliseconds.
@@ -22,6 +47,16 @@ type RemarkLinkToCardOptions = {
 	 * @default 'markdown-link-card'
 	 */
 	classPrefix?: string;
+	/**
+	 * Retrieves the HTML for a link instead of requesting it directly.
+	 *
+	 * Supply this where a direct cross-origin request is not possible — running
+	 * in a browser, where the request has to go through your own proxy — or to
+	 * cache, mock, or rate-limit the lookups.
+	 *
+	 * @default a fetcher that requests the URL and accepts only `text/html`
+	 */
+	fetcher?: LinkCardFetcher;
 };
 
 const isValidURL = (text: string): boolean => {
@@ -36,7 +71,11 @@ const isValidURL = (text: string): boolean => {
 const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 	options = {},
 ) => {
-	const { classPrefix = "markdown-link-card", timeout = 5000 } = options;
+	const {
+		classPrefix = "markdown-link-card",
+		timeout = 5000,
+		fetcher = defaultFetcher,
+	} = options;
 
 	return async (tree) => {
 		const promises: (() => Promise<void>)[] = [];
@@ -96,17 +135,7 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 				let ogImageUrl: string | undefined;
 
 				try {
-					const raw = await ofetch.raw<string>(url, {
-						timeout,
-					});
-					const contentType = raw.headers.get("content-type");
-
-					// Only process HTML content
-					if (contentType?.indexOf("text/html") === -1) {
-						throw new Error("Content type is not HTML");
-					}
-
-					const html = raw._data;
+					const html = await fetcher(url, { timeout });
 
 					if (html === undefined || html === "") {
 						throw new Error("HTML content is empty");
