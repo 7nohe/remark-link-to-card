@@ -31,16 +31,22 @@
 	"types": "./dist/index.d.ts",
 	"typesVersions": {
 		"*": {
-			"*": ["./dist/*", "./dist/index.d.ts"]
+			"*": [
+				"./dist/*",
+				"./dist/index.d.ts"
+			]
 		}
 	},
-	"files": ["dist", "styles"],
+	"files": [
+		"dist",
+		"styles"
+	],
 	"scripts": {
 		"build": "unbuild",
 		"dev": "unbuild --stub",
 		"format": "biome format . --write",
 		"lint": "biome lint .",
-		"check": "biome check --apply .",
+		"check": "biome check --write .",
 		"prepublishOnly": "pnpm run build",
 		"release": "bumpp && npm publish",
 		"test": "vitest",
@@ -52,7 +58,7 @@
 		"unified": "^11.0.4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^1.6.2",
+		"@biomejs/biome": "^2.5.9",
 		"@types/he": "^1.2.3",
 		"@types/node": "^20.10.6",
 		"bumpp": "^9.4.0",
@@ -77,6 +83,6 @@
 		"pre-commit": "pnpm lint-staged"
 	},
 	"lint-staged": {
-		"*": "biome check --apply ."
+		"*": "biome check --write ."
 	}
 }
