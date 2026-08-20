@@ -18,10 +18,15 @@ export type OpenGraphMetadata = {
  * tracking pixel become the card's thumbnail.
  */
 export const readOpenGraph = (html: string): OpenGraphMetadata => {
-	const openGraph = new Map<string, string>();
+	let ogTitle: string | undefined;
+	let ogDescription: string | undefined;
+	let ogImage: string | undefined;
+	let ogImageUrl: string | undefined;
 	let documentTitle: string | undefined;
 	let metaDescription: string | undefined;
+	let inHead = false;
 	let inTitle = false;
+	let hasTitle = false;
 	let noscriptDepth = 0;
 
 	const parser = new Parser({
@@ -35,8 +40,17 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 				return;
 			}
 
+			if (name === "head") {
+				inHead = true;
+				return;
+			}
+
 			if (name === "title") {
-				inTitle = true;
+				// A document can carry several — the <head> one, and one inside
+				// every inline SVG icon. Only the first is the page's own.
+				if (!hasTitle) {
+					inTitle = true;
+				}
 				return;
 			}
 
@@ -45,30 +59,40 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 			}
 
 			// Pages use `property` and `name` interchangeably for Open Graph, and
-			// a few write the value as `value` rather than `content`.
-			const key = (attributes.property ?? attributes.name)?.toLowerCase();
-			const value = attributes.content ?? attributes.value;
+			// a few write the value as `value` rather than `content`. An attribute
+			// that is present but empty counts as absent, so that a blank og:title
+			// falls through to <title> rather than blanking the card.
+			const key = (attributes.property || attributes.name)?.toLowerCase();
+			const value = attributes.content || attributes.value;
 
-			if (key === undefined || value === undefined) {
+			if (!key || !value) {
 				return;
 			}
 
-			if (key === "description") {
+			// The description fallback is scoped to <head>; a stray description
+			// meta in the body is not the page describing itself.
+			if (key === "description" && inHead) {
 				metaDescription = value;
 			}
 
-			if (key === "og:title" || key === "og:description") {
-				// A page that repeats a scalar field means the last one.
-				openGraph.set(key, value);
+			// A page that repeats a scalar field means the last one.
+			if (key === "og:title") {
+				ogTitle = value;
 			}
 
-			if (
-				(key === "og:image" || key === "og:image:url") &&
-				!openGraph.has("og:image")
-			) {
-				// og:image may be repeated to offer several sizes; the first is the
-				// primary one.
-				openGraph.set("og:image", value);
+			if (key === "og:description") {
+				ogDescription = value;
+			}
+
+			// og:image may be repeated to offer several sizes; the first is the
+			// primary one. og:image:url is a synonym, but only a fallback for it —
+			// an explicit og:image wins wherever it appears.
+			if (key === "og:image") {
+				ogImage ??= value;
+			}
+
+			if (key === "og:image:url") {
+				ogImageUrl ??= value;
 			}
 		},
 		ontext(text) {
@@ -79,10 +103,20 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 		onclosetag(name) {
 			if (name === "noscript") {
 				noscriptDepth = Math.max(0, noscriptDepth - 1);
+				return;
 			}
 
-			if (name === "title") {
+			if (noscriptDepth > 0) {
+				return;
+			}
+
+			if (name === "head") {
+				inHead = false;
+			}
+
+			if (name === "title" && inTitle) {
 				inTitle = false;
+				hasTitle = true;
 			}
 		},
 	});
@@ -91,8 +125,8 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 	parser.end();
 
 	return {
-		title: openGraph.get("og:title") ?? documentTitle,
-		description: openGraph.get("og:description") ?? metaDescription,
-		image: openGraph.get("og:image"),
+		title: ogTitle ?? documentTitle,
+		description: ogDescription ?? metaDescription,
+		image: ogImage ?? ogImageUrl,
 	};
 };

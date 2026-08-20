@@ -99,6 +99,84 @@ describe("readOpenGraph", () => {
 		).toBe("A & B <x> é");
 	});
 
+	describe("attributes that are present but empty", () => {
+		it("falls through to <title> when og:title is blank", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><title>Real Title</title><meta property="og:title" content=""></head></html>`,
+				).title,
+			).toBe("Real Title");
+		});
+
+		it("falls through to the description meta when og:description is blank", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><meta property="og:description" content=""><meta name="description" content="Real desc"></head></html>`,
+				).description,
+			).toBe("Real desc");
+		});
+
+		it("reads value= when content= is blank", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><meta property="og:title" content="" value="FromValue"></head></html>`,
+				).title,
+			).toBe("FromValue");
+		});
+
+		it("does not let a blank property= hide the name=", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><meta property="" name="og:title" content="FromName"></head></html>`,
+				).title,
+			).toBe("FromName");
+		});
+	});
+
+	describe("more than one <title>", () => {
+		it("ignores the <title> inside an inline SVG", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><title>Acme Blog</title></head><body><svg><title>Close</title></svg><svg><title>Menu</title></svg></body></html>`,
+				).title,
+			).toBe("Acme Blog");
+		});
+
+		it("takes the first of two <title> tags", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><title>First</title><title>Second</title></head></html>`,
+				).title,
+			).toBe("First");
+		});
+	});
+
+	describe("og:image spellings", () => {
+		it("prefers og:image even when og:image:url comes first", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><meta property="og:image:url" content="URLFORM"><meta property="og:image" content="PLAIN"></head></html>`,
+				).image,
+			).toBe("PLAIN");
+		});
+
+		it("uses og:image:url when there is no og:image", () => {
+			expect(
+				readOpenGraph(
+					`<html><head><meta property="og:image:url" content="URLFORM"></head></html>`,
+				).image,
+			).toBe("URLFORM");
+		});
+	});
+
+	it("ignores a description meta outside the head", () => {
+		expect(
+			readOpenGraph(
+				`<html><head><title>T</title></head><body><meta name="description" content="BodyDesc"></body></html>`,
+			).description,
+		).toBeUndefined();
+	});
+
 	describe("noscript", () => {
 		it("does not let a noscript tag override the real one", () => {
 			expect(
