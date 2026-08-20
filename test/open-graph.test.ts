@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { type OpenGraphMetadata, readOpenGraph } from "../src/open-graph";
 
@@ -204,7 +202,13 @@ describe("readOpenGraph", () => {
 	});
 
 	describe("the captured pages", () => {
-		const pagesDir = path.resolve(__dirname, "pages");
+		// Globbed rather than listed, so a page added to test/pages/ without an
+		// expectation here fails instead of going quietly unchecked.
+		const pages = import.meta.glob<string>("./pages/*.html", {
+			query: "?raw",
+			import: "default",
+			eager: true,
+		});
 
 		const expected: Record<string, OpenGraphMetadata> = {
 			"example.com.html": {
@@ -240,10 +244,14 @@ describe("readOpenGraph", () => {
 			},
 		};
 
-		for (const [file, want] of Object.entries(expected)) {
+		for (const [filePath, html] of Object.entries(pages)) {
+			const file = filePath.replace("./pages/", "");
+
 			it(`reads ${file}`, () => {
-				const html = fs.readFileSync(path.join(pagesDir, file), "utf8");
-				expect(readOpenGraph(html)).toEqual(want);
+				expect(expected, `no expectation recorded for ${file}`).toHaveProperty(
+					file,
+				);
+				expect(readOpenGraph(html)).toEqual(expected[file]);
 			});
 		}
 	});

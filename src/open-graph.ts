@@ -12,10 +12,18 @@ export type OpenGraphMetadata = {
  * Only `<meta>` and `<title>` matter here, so the markup is streamed rather
  * than built into a tree — there is nothing to query afterwards.
  *
- * `<noscript>` is skipped. A spec-compliant HTML5 parser treats its contents
- * as raw text while scripting is enabled, and pages routinely park analytics
- * pixels and "please enable JavaScript" markup there; reading it would let a
- * tracking pixel become the card's thumbnail.
+ * Which parts of a document count as the page describing itself:
+ *
+ * - `og:*` is honoured anywhere. Malformed pages put it after `</head>`, and
+ *   streaming means there is no tree to repair one back into place.
+ * - A plain `description` meta only counts inside `<head>`; one in the body is
+ *   page content, not the page describing itself.
+ * - Only the first `<title>` is the page's own. Every inline SVG icon brings
+ *   another one.
+ * - `<noscript>` is skipped entirely. A spec-compliant HTML5 parser treats its
+ *   contents as raw text while scripting is enabled, and pages routinely park
+ *   analytics pixels and "please enable JavaScript" markup there; reading it
+ *   would let a tracking pixel become the card's thumbnail.
  */
 export const readOpenGraph = (html: string): OpenGraphMetadata => {
 	let ogTitle: string | undefined;
@@ -25,8 +33,9 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 	let documentTitle: string | undefined;
 	let metaDescription: string | undefined;
 	let inHead = false;
-	let inTitle = false;
-	let hasTitle = false;
+	// "pending" until the first <title> opens, "read" once it closes; only the
+	// text seen while "reading" belongs to the page.
+	let title: "pending" | "reading" | "read" = "pending";
 	let noscriptDepth = 0;
 
 	const parser = new Parser({
@@ -46,10 +55,8 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 			}
 
 			if (name === "title") {
-				// A document can carry several — the <head> one, and one inside
-				// every inline SVG icon. Only the first is the page's own.
-				if (!hasTitle) {
-					inTitle = true;
+				if (title === "pending") {
+					title = "reading";
 				}
 				return;
 			}
@@ -69,34 +76,32 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 				return;
 			}
 
-			// The description fallback is scoped to <head>; a stray description
-			// meta in the body is not the page describing itself.
-			if (key === "description" && inHead) {
-				metaDescription = value;
-			}
-
-			// A page that repeats a scalar field means the last one.
-			if (key === "og:title") {
-				ogTitle = value;
-			}
-
-			if (key === "og:description") {
-				ogDescription = value;
-			}
-
-			// og:image may be repeated to offer several sizes; the first is the
-			// primary one. og:image:url is a synonym, but only a fallback for it —
-			// an explicit og:image wins wherever it appears.
-			if (key === "og:image") {
-				ogImage ??= value;
-			}
-
-			if (key === "og:image:url") {
-				ogImageUrl ??= value;
+			// A repeated scalar field means the last one (`=`); a repeated image
+			// means the first, since the rest are alternate sizes (`??=`).
+			switch (key) {
+				case "description":
+					if (inHead) {
+						metaDescription = value;
+					}
+					break;
+				case "og:title":
+					ogTitle = value;
+					break;
+				case "og:description":
+					ogDescription = value;
+					break;
+				case "og:image":
+					ogImage ??= value;
+					break;
+				// A synonym for og:image, but only a fallback for it: an explicit
+				// og:image wins wherever it appears.
+				case "og:image:url":
+					ogImageUrl ??= value;
+					break;
 			}
 		},
 		ontext(text) {
-			if (inTitle) {
+			if (title === "reading") {
 				documentTitle = (documentTitle ?? "") + text;
 			}
 		},
@@ -114,9 +119,8 @@ export const readOpenGraph = (html: string): OpenGraphMetadata => {
 				inHead = false;
 			}
 
-			if (name === "title" && inTitle) {
-				inTitle = false;
-				hasTitle = true;
+			if (name === "title" && title === "reading") {
+				title = "read";
 			}
 		},
 	});
