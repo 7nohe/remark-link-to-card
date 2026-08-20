@@ -15,7 +15,11 @@ import cssBase from "../styles/link-card-base.css?raw";
  * controls: they went stale as soon as one of those sites edited its Open
  * Graph tags, and the suite could not run offline at all.
  */
-const pages = import.meta.glob("./pages/*.html", { as: "raw", eager: true });
+const pages = import.meta.glob<string>("./pages/*.html", {
+	query: "?raw",
+	import: "default",
+	eager: true,
+});
 
 const pageByUrl: Record<string, string> = {
 	"https://example.com": pages["./pages/example.com.html"],
@@ -54,7 +58,11 @@ ${cssBase}
 `;
 
 describe("fixtures", () => {
-	const files = import.meta.glob("./input/*.md", { as: "raw", eager: true });
+	const files = import.meta.glob<string>("./input/*.md", {
+		query: "?raw",
+		import: "default",
+		eager: true,
+	});
 	const filter = process.env.FILTER;
 
 	for (const [path, content] of Object.entries(files)) {

@@ -63,7 +63,7 @@ const isValidURL = (text: string): boolean => {
 	try {
 		const url = new URL(text);
 		return url.protocol === "http:" || url.protocol === "https:";
-	} catch (error) {
+	} catch (_error) {
 		return false;
 	}
 };
@@ -163,7 +163,9 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 						class: `${classPrefix}-link`,
 						href: url,
 						target: "_blank",
-						rel: "noopener noreferrer nofollow",
+						// hast types `rel` as a token list; it serializes back to
+						// `rel="noopener noreferrer nofollow"`.
+						rel: ["noopener", "noreferrer", "nofollow"],
 					},
 				};
 
