@@ -55,10 +55,10 @@ describe.skipIf(!built)("built bundle", () => {
 			.trim()
 			.replace(/\r\n/g, "\n");
 
-		const snapshot = fs.readFileSync(
-			path.resolve(__dirname, "output/1.basic.html"),
-			"utf8",
-		);
+		// Checkouts on Windows carry CRLF, so normalise as the fixture test does.
+		const snapshot = fs
+			.readFileSync(path.resolve(__dirname, "output/1.basic.html"), "utf8")
+			.replace(/\r\n/g, "\n");
 		// The snapshot appends a <style> block the plugin has no part in.
 		const expected = snapshot.slice(0, snapshot.lastIndexOf("<style>")).trim();
 
