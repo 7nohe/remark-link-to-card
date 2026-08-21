@@ -1,7 +1,7 @@
 name: Release
 
-permissions:
-  contents: write
+# Nothing is granted by default; each job opts into exactly what it needs.
+permissions: {}
 
 on:
   push:
@@ -9,12 +9,60 @@ on:
       - 'v*'
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      # npm mints the publish credential from this OIDC token, which is why
+      # there is no npm token in this workflow or in the repository secrets.
+      # Provenance is signed with it too.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          # npm trusted publishing needs Node >=22.14; lts is well past that.
+          runtime: node@lts
+          cache: true
+
+      - name: Check the tag against the version being published
+        # A tag that disagrees with package.json would publish a version nobody
+        # asked for, and npm releases cannot be taken back.
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match package.json version ${version}"
+            exit 1
+          fi
+
+      - name: Test
+        run: pnpm test
+
+      - name: Publish
+        # The tag is checked out detached, which pnpm's publish-branch check
+        # would otherwise reject. `prepublishOnly` builds dist/ first.
+        run: pnpm publish --access public --provenance --no-git-checks
+
+  changelog:
+    runs-on: ubuntu-latest
+
+    # Only announce a release that actually reached the registry.
+    needs: publish
+
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install pnpm and Node
         uses: pnpm/setup@v2

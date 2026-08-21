@@ -53,7 +53,7 @@
 		"lint": "biome lint .",
 		"check": "biome check --write .",
 		"prepublishOnly": "pnpm run build",
-		"release": "bumpp && npm publish",
+		"release": "bumpp",
 		"test": "vitest",
 		"typecheck": "tsc --noEmit",
 		"prepare": "simple-git-hooks"
