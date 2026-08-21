@@ -2,10 +2,10 @@ import { consola } from "consola";
 import he from "he";
 import type { PhrasingContent, Root, Text } from "mdast";
 import { ofetch } from "ofetch";
-import ogs from "open-graph-scraper-lite";
 import { parseURL } from "ufo";
 import type { Plugin } from "unified";
 import { visit } from "unist-util-visit";
+import { readOpenGraph } from "./open-graph";
 
 const LOG_PREFIX = "[remark-link-to-card]";
 
@@ -141,16 +141,11 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 						throw new Error("HTML content is empty");
 					}
 
-					const ogData = await ogs({ html });
-					const { result } = ogData;
+					const metadata = readOpenGraph(html);
 
-					if (result.success === false) {
-						throw new Error(result.errorDetails?.message);
-					}
-
-					title = he.encode(result.ogTitle ?? title);
-					description = he.encode(result.ogDescription ?? description);
-					ogImageUrl = result.ogImage?.at(0)?.url;
+					title = he.encode(metadata.title ?? title);
+					description = he.encode(metadata.description ?? description);
+					ogImageUrl = metadata.image;
 				} catch (error) {
 					const message =
 						error instanceof Error ? error.message : "An error occurred";
