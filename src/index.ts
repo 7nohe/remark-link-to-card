@@ -77,6 +77,10 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 		fetcher = defaultFetcher,
 	} = options;
 
+	// The prefix reaches the raw HTML below, so it is escaped once here. On
+	// `hProperties` it is left alone — hast escapes that at serialization.
+	const encodedClassPrefix = he.encode(classPrefix);
+
 	return async (tree) => {
 		const promises: (() => Promise<void>)[] = [];
 		visit(tree, "paragraph", (node, _, parent) => {
@@ -143,14 +147,22 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 
 					const metadata = readOpenGraph(html);
 
-					title = he.encode(metadata.title ?? title);
-					description = he.encode(metadata.description ?? description);
+					title = metadata.title ?? title;
+					description = metadata.description ?? description;
 					ogImageUrl = metadata.image;
 				} catch (error) {
 					const message =
 						error instanceof Error ? error.message : "An error occurred";
 					consola.error(LOG_PREFIX, message);
 				}
+
+				// The card is emitted as raw HTML, so every value interpolated into
+				// it is escaped here rather than at the point it is read. The title,
+				// the description and the image URL all come from the linked page,
+				// which is somebody else's.
+				const encodedTitle = he.encode(title);
+				const encodedDescription = he.encode(description);
+				const encodedHost = he.encode(host ?? "");
 
 				node.data = {
 					hName: "a",
@@ -166,8 +178,8 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 
 				const thumbnail = ogImageUrl
 					? `
-  <div class="${classPrefix}-thumbnail">
-    <img src="${ogImageUrl}" alt="${title}" class="${classPrefix}-thumbnail-image">
+  <div class="${encodedClassPrefix}-thumbnail">
+    <img src="${he.encode(ogImageUrl)}" alt="${encodedTitle}" class="${encodedClassPrefix}-thumbnail-image">
   </div>
 `
 					: "";
@@ -176,14 +188,14 @@ const RemarkLinkToCard: Plugin<RemarkLinkToCardOptions[], Root> = (
 					{
 						type: "html",
 						value: `
-  <div class="${classPrefix}-main">
-    <div class="${classPrefix}-title">${title}</div>
-    <div class="${classPrefix}-description">
-      ${description}
+  <div class="${encodedClassPrefix}-main">
+    <div class="${encodedClassPrefix}-title">${encodedTitle}</div>
+    <div class="${encodedClassPrefix}-description">
+      ${encodedDescription}
     </div>
-    <div class="${classPrefix}-meta">
-      <img class="${classPrefix}-favicon" src="https://www.google.com/s2/favicons?domain=${host}" alt="${host} favicon image" width="14" height="14">
-      ${host}
+    <div class="${encodedClassPrefix}-meta">
+      <img class="${encodedClassPrefix}-favicon" src="https://www.google.com/s2/favicons?domain=${encodedHost}" alt="${encodedHost} favicon image" width="14" height="14">
+      ${encodedHost}
     </div>
   </div>
   ${thumbnail}
