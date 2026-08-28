@@ -1,7 +1,7 @@
 {
 	"name": "remark-link-to-card",
 	"type": "module",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"packageManager": "pnpm@11.22.0",
 	"description": "remark plugin to convert text links to link cards",
 	"author": "Daiki Urata",
