@@ -4,10 +4,14 @@ import { unified } from "unified";
 import { describe, expect, it } from "vitest";
 import RemarkLinkToCard, { type LinkCardFetcher } from "../src";
 
-const render = async (markdown: string, fetcher: LinkCardFetcher) => {
+const render = async (
+	markdown: string,
+	fetcher: LinkCardFetcher,
+	classPrefix?: string,
+) => {
 	const file = await unified()
 		.use(remarkParse)
-		.use(RemarkLinkToCard, { fetcher })
+		.use(RemarkLinkToCard, { fetcher, ...(classPrefix ? { classPrefix } : {}) })
 		.use(remarkHtml, { sanitize: false })
 		.process(markdown);
 
@@ -76,6 +80,17 @@ describe("escaping", () => {
 
 		expect(html).toContain("&#x22; onerror=&#x22;");
 		expect(html).not.toMatch(/onerror\s*=\s*"/);
+	});
+
+	it("escapes the class prefix it is configured with", async () => {
+		const html = await render(
+			MARKDOWN,
+			async () => pageWith('"https://example.com/x.png"'),
+			'x" onmouseover="alert(1)',
+		);
+
+		expect(html).toContain("&#x22; onmouseover=&#x22;");
+		expect(html).not.toMatch(/onmouseover\s*=\s*"/);
 	});
 
 	it("escapes the link text it falls back to when the fetch fails", async () => {
